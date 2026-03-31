@@ -1,0 +1,35 @@
+name: Deploy HydroOJ
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          
+      - name: Install Hydro
+        run: |
+          # 安装 MongoDB（GitHub Actions 自带，只需启动）
+          sudo systemctl start mongodb
+          
+          # 安装 Hydro
+          npm install -g hydrooj
+          
+          # 初始化并启动
+          hydrooj init
+          hydrooj start &
+          
+      - name: Expose service
+        uses: actions/upload-artifact@v4
+        with:
+          name: hydro-log
+          path: ~/.hydro/
